@@ -1,8 +1,16 @@
-import Topbar from "./topbar";
+import Topbar from "./tools/topbar";
+import Search from './tools/search'
+import Table from './tools/table'
+import NotearchiveConfig from "./notearchiveConfig"
+
 export default function Home() {
-  return (
-    <div>
-      <Topbar/>
-    </div>
-  )
+    return (
+        <div>
+            <NotearchiveConfig>
+                <Topbar/>
+                <Search/>
+                <Table/>
+            </NotearchiveConfig>
+        </div>
+    )
 }
