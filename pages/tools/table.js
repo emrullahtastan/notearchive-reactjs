@@ -17,6 +17,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableCell, {tableCellClasses} from '@mui/material/TableCell';
 import {PromptContext, useContext} from "./../contexts/PromptContext";
+import {useEffect, useState} from "react";
 
 const StyledTableCell = styled(TableCell)(({theme}) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -102,26 +103,37 @@ TablePaginationActions.propTypes = {
     rowsPerPage: PropTypes.number.isRequired,
 };
 
-function createData(eser, makam, gufte, beste, form) {
-    return {
-        eser,
-        makam,
-        gufte,
-        beste,
-        form,
-    };
-}
 
-const rows = [
-    createData('A Dostlar Ne Mutlu Size', "Uşşak", "Ahmet Soyyiğit", "Yahya Soyyiğit", "İlahi"),
-    createData('A dost sen de gel de bize dost ol', "Acemaşiran", "Şeref Çakar", "Ayşe Feyzioğlu", "Şarkı"),
-    createData('3 Aç Gözün Gafletden Uyan', "Acemaşiran", "Cüneyt Kosal", "Aziz Mahmud Hüdai", "İlahi"),
-    createData('4 Aç Gözün Gafletden Uyan', "Acemaşiran", "Cüneyt Kosal", "Aziz Mahmud Hüdai", "İlahi"),
-    createData('5 Aç Gözün Gafletden Uyan', "Acemaşiran", "Cüneyt Kosal", "Aziz Mahmud Hüdai", "İlahi"),
-    createData('6 ç Gözün Gafletden Uyan', "Acemaşiran", "Cüneyt Kosal", "Aziz Mahmud Hüdai", "İlahi"),
-].sort((a, b) => (a.calories < b.calories ? -1 : 1));
+export default function CustomPaginationActionsTable({searchValue}) {
 
-export default function CustomPaginationActionsTable() {
+    function createData(eser, makam, gufte, beste, form, visible = false) {
+        return {
+            eser,
+            makam,
+            gufte,
+            beste,
+            form,
+            visible
+        };
+    }
+
+    let list = [
+        createData('1 A Dostlar Ne Mutlu Size', "Uşşak", "Ahmet Soyyiğit", "Yahya Soyyiğit", "İlahi"),
+        createData('2 A dost sen de gel de bize dost ol', "Acemaşiran", "Şeref Çakar", "Ayşe Feyzioğlu", "Şarkı"),
+        createData('3 Aç Gözün Gafletden Uyan', "Acemaşiran", "Cüneyt Kosal", "Aziz Mahmud Hüdai", "İlahi"),
+        createData('4 Aç Gözün Gafletden Uyan', "Acemaşiran", "Cüneyt Kosal", "Aziz Mahmud Hüdai", "İlahi"),
+        createData('5 Aç Gözün Gafletden Uyan', "Acemaşiran", "Cüneyt Kosal", "Aziz Mahmud Hüdai", "İlahi"),
+        createData('6 ç Gözün Gafletden Uyan', "Acemaşiran", "Cüneyt Kosal", "Aziz Mahmud Hüdai", "İlahi"),
+    ].sort((a, b) => (a.eser < b.eser ? -1 : 1));
+
+
+    const [rows, setRows] = useState(list);
+
+    useEffect(() => {
+        listForSearchFilter();
+    }, [searchValue])
+
+
     const {prompt, setPrompt} = useContext(PromptContext);
 
     const [page, setPage] = React.useState(0);
@@ -146,71 +158,96 @@ export default function CustomPaginationActionsTable() {
         setPrompt(obj);
     };
 
-    return (
-        <TableContainer component={Paper}>
-            <Table sx={{minWidth: 500}} aria-label="customized custom pagination table">
-                <TableHead>
-                    <TableRow>
-                        <StyledTableCell>Eser Başlığı</StyledTableCell>
-                        <StyledTableCell>Makam</StyledTableCell>
-                        <StyledTableCell>Güfte</StyledTableCell>
-                        <StyledTableCell>Beste</StyledTableCell>
-                        <StyledTableCell>Form</StyledTableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {(rowsPerPage > 0
-                            ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                            : rows
-                    ).map((row, i) => (
-                        <TableRow key={i}>
-                            <TableCell component="th" scope="row">
-                                <div style={{width: 'fit-content', cursor: 'pointer'}}
-                                     onClick={handleClickOpen}>{row.eser}</div>
-                            </TableCell>
-                            <TableCell style={{width: 160}}>
-                                {row.makam}
-                            </TableCell>
-                            <TableCell style={{width: 160}}>
-                                {row.gufte}
-                            </TableCell>
-                            <TableCell style={{width: 160}}>
-                                {row.beste}
-                            </TableCell>
-                            <TableCell style={{width: 160}}>
-                                {row.form}
-                            </TableCell>
-                        </TableRow>
-                    ))}
+    const listForSearchFilter = () => {
+        let newList=[]
+        list.filter((a) => {
+            if (searchValue) {
+                let value = a.eser.toLowerCase().includes(searchValue.toLowerCase());
+                a.visible = value;
+            } else
+                a.visible = true;
 
-                    {emptyRows > 0 && (
-                        <TableRow style={{height: 53 * emptyRows}}>
-                            <TableCell colSpan={6}/>
+            if (a.visible)
+                newList.push(a)
+        });
+        setRows(newList)
+    }
+
+    return (
+        <div>
+            <TableContainer component={Paper}>
+                <Table sx={{minWidth: 500}} aria-label="customized custom pagination table">
+                    <TableHead>
+                        <TableRow>
+                            <StyledTableCell>Eser Başlığı</StyledTableCell>
+                            <StyledTableCell>Makam</StyledTableCell>
+                            <StyledTableCell>Güfte</StyledTableCell>
+                            <StyledTableCell>Beste</StyledTableCell>
+                            <StyledTableCell>Form</StyledTableCell>
+                            <StyledTableCell>Visible</StyledTableCell>
                         </TableRow>
-                    )}
-                </TableBody>
-                <TableFooter>
-                    <TableRow>
-                        <TablePagination
-                            rowsPerPageOptions={[5, 10, 25, {label: 'Hepsi', value: -1}]}
-                            colSpan={3}
-                            count={rows.length}
-                            rowsPerPage={rowsPerPage}
-                            page={page}
-                            SelectProps={{
-                                inputProps: {
-                                    'aria-label': 'sayfa başına satır',
-                                },
-                                native: true,
-                            }}
-                            labelRowsPerPage={"Sayfa başına satır"}
-                            onPageChange={handleChangePage}
-                            onRowsPerPageChange={handleChangeRowsPerPage}
-                            ActionsComponent={TablePaginationActions}
-                        />
-                    </TableRow>
-                </TableFooter>
-            </Table>
-        </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                        {(rowsPerPage > 0
+                                ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                : rows
+                        ).map(function (row, i) {
+                            return (
+                                <TableRow key={i}>
+                                    <TableCell component="th" scope="row">
+                                        <div style={{width: 'fit-content', cursor: 'pointer'}}
+                                             onClick={handleClickOpen}>{row.eser}</div>
+                                    </TableCell>
+                                    <TableCell style={{width: 160}}>
+                                        {row.makam}
+                                    </TableCell>
+                                    <TableCell style={{width: 160}}>
+                                        {row.gufte}
+                                    </TableCell>
+                                    <TableCell style={{width: 160}}>
+                                        {row.beste}
+                                    </TableCell>
+                                    <TableCell style={{width: 160}}>
+                                        {row.form}
+                                    </TableCell>
+                                    <TableCell style={{width: 160}}>
+                                        {row.visible}
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        }, this)}
+
+                        {emptyRows > 0 && (
+                            <TableRow style={{height: 53 * emptyRows}}>
+                                <TableCell colSpan={6}/>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                    <TableFooter>
+                        <TableRow>
+                            <TablePagination
+                                rowsPerPageOptions={[5, 10, 25, {label: 'Hepsi', value: -1}]}
+                                colSpan={3}
+                                count={rows.length}
+                                rowsPerPage={rowsPerPage}
+                                page={page}
+                                SelectProps={{
+                                    inputProps: {
+                                        'aria-label': 'sayfa başına satır',
+                                    },
+                                    native: true,
+                                }}
+                                labelRowsPerPage={"Sayfa başına satır"}
+                                onPageChange={handleChangePage}
+                                onRowsPerPageChange={handleChangeRowsPerPage}
+                                ActionsComponent={TablePaginationActions}
+                            />
+                        </TableRow>
+                    </TableFooter>
+                </Table>
+            </TableContainer>
+
+
+        </div>
     );
 }
